@@ -422,6 +422,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const graduationYear = document.getElementById('app-year')?.value || '';
       const schoolAttended = document.getElementById('app-school')?.value || '';
       const prog = document.getElementById('app-program')?.value || 'HND in Nursing / State Registered Nursing (SRN)';
+      const session = document.getElementById('app-session')?.value || 'October 2026/2027 Main Intake';
+      const hostelNeeded = document.getElementById('app-hostel')?.value === 'yes';
 
       try {
         const response = await fetch('/api/admissions/apply', {
@@ -435,7 +437,9 @@ document.addEventListener('DOMContentLoaded', () => {
             qualification,
             graduationYear,
             schoolAttended,
-            program: prog
+            program: prog,
+            session,
+            hostelNeeded
           })
         });
 

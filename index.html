@@ -1248,34 +1248,58 @@
                 <h3 class="text-lg font-bold text-slate-800">Step 3: Program &amp; Session Choice</h3>
                 
                 <div>
-                  <label class="block text-xs font-bold text-slate-700 mb-1">Select Intended Program *</label>
-                  <select id="app-program" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-pine focus:outline-none">
-                    <option value="HND in Nursing / State Registered Nursing (SRN)">HND Nursing / State Registered Nursing (3 Yrs)</option>
-                    <option value="HND in Medical Laboratory Science">HND Medical Laboratory Science (3 Yrs)</option>
-                    <option value="HND in Pharmacy Technology">HND Pharmacy Technology (3 Yrs)</option>
-                    <option value="HND in Physiotherapy & Rehabilitation">HND Physiotherapy (3 Yrs)</option>
-                    <option value="HND in Midwifery">HND Midwifery (3 Yrs)</option>
-                    <option value="HND in Dental Therapy">HND Dental Therapy (3 Yrs)</option>
-                    <option value="HND in Computer Science & Networks">HND Computer Science &amp; Networks (2 Yrs)</option>
-                    <option value="HND in Civil Engineering Technology">HND Civil Engineering Technology (2 Yrs)</option>
-                    <option value="HND in Banking & Finance">HND Banking &amp; Finance (2 Yrs)</option>
-                    <option value="HND in Food Technology & Agro-Pastoral">HND Food Technology (2 Yrs)</option>
+                  <label class="block text-xs font-bold text-slate-700 mb-1">Select Intended Program * (26 Accredited Programs)</label>
+                  <select id="app-program" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-pine focus:outline-none bg-white">
+                    <optgroup label="School of Health Sciences (3 Years • 250,000 FCFA/Year)">
+                      <option value="HND in Nursing / State Registered Nursing (SRN)">HND Nursing / State Registered Nursing (SRN)</option>
+                      <option value="HND in Medical Laboratory Science">HND Medical Laboratory Science</option>
+                      <option value="HND in Pharmacy Technology">HND Pharmacy Technology</option>
+                      <option value="HND in Physiotherapy & Rehabilitation">HND Physiotherapy &amp; Rehabilitation</option>
+                      <option value="HND in Midwifery">HND Midwifery</option>
+                      <option value="HND in Dental Therapy">HND Dental Therapy</option>
+                      <option value="HND in Nutrition & Dietetics">HND Nutrition &amp; Dietetics</option>
+                      <option value="HND in Healthcare Management">HND Healthcare Management</option>
+                    </optgroup>
+                    <optgroup label="School of Engineering & Technology (2 Years • 250,000 FCFA/Year)">
+                      <option value="HND in Computer Science & Networks">HND Computer Science &amp; Networks</option>
+                      <option value="HND in Civil Engineering Technology">HND Civil Engineering Technology</option>
+                      <option value="HND in Building Science & Technology">HND Building Science &amp; Technology</option>
+                      <option value="HND in Urban Planning">HND Urban Planning</option>
+                      <option value="HND in Topography & Surveying">HND Topography &amp; Surveying</option>
+                      <option value="HND in Sanitary Installation & Plumbing">HND Sanitary Installation &amp; Plumbing</option>
+                      <option value="HND in Geotechnics">HND Geotechnics</option>
+                      <option value="HND in Wood Work Technology">HND Wood Work Technology</option>
+                    </optgroup>
+                    <optgroup label="School of Management Sciences (2 Years • 250,000 FCFA/Year)">
+                      <option value="HND in Banking & Finance">HND Banking &amp; Finance</option>
+                      <option value="HND in Human Resource Management">HND Human Resource Management</option>
+                      <option value="HND in Logistics & Transport Management">HND Logistics &amp; Transport Management</option>
+                      <option value="HND in Project Management">HND Project Management</option>
+                      <option value="HND in Public Service & Administration">HND Public Service &amp; Administration</option>
+                      <option value="HND in Assistant Manager">HND Assistant Manager</option>
+                    </optgroup>
+                    <optgroup label="School of Agriculture & Food Sciences (2 Years • 250,000 FCFA/Year)">
+                      <option value="HND in Food Technology">HND Food Technology</option>
+                      <option value="HND in Agro-Pastoral Entrepreneurship">HND Agro-Pastoral Entrepreneurship</option>
+                      <option value="HND in Agro-Pastoral Adviser">HND Agro-Pastoral Adviser</option>
+                      <option value="HND in Crop Production Technology">HND Crop Production Technology</option>
+                    </optgroup>
                   </select>
                 </div>
 
                 <div class="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Intended Start Session</label>
-                    <select class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-pine focus:outline-none">
-                      <option>October 2026 / 2027 Main Intake</option>
-                      <option>March 2027 Accelerated Intake</option>
+                    <select id="app-session" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-pine focus:outline-none bg-white">
+                      <option value="October 2026/2027 Main Intake">October 2026 / 2027 Main Intake</option>
+                      <option value="March 2027 Accelerated Intake">March 2027 Accelerated Intake</option>
                     </select>
                   </div>
                   <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Campus Hostel Accommodation</label>
-                    <select class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-pine focus:outline-none">
-                      <option>I need campus/partner hostel assistance</option>
-                      <option>I will arrange my own accommodation</option>
+                    <select id="app-hostel" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-brand-pine focus:outline-none bg-white">
+                      <option value="yes">I need campus/partner hostel assistance</option>
+                      <option value="no">I will arrange my own accommodation</option>
                     </select>
                   </div>
                 </div>
