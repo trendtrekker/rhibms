@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admissions Management Dashboard | RHIBMS Buea</title>
+  <link rel="icon" type="image/png" href="../assets/images/branding/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#03251d',
+              pine: '#064e3b',
+              emerald: '#059669',
+              amber: '#f59e0b',
+              navy: '#0f172a'
+            }
+          },
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+            serif: ['Cinzel', 'Georgia', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #059669; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-emerald-500 selection:text-white">
+
+  <!-- TOP NAV -->
+  <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-30 shadow-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      
+      <!-- Logo & Title -->
+      <div class="flex items-center gap-4">
+        <a href="index.html" class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl bg-white p-1.5 shadow-md flex items-center justify-center">
+            <img src="../assets/images/branding/logo.png" alt="RHIBMS Logo" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-serif font-bold text-lg text-white">RHIBMS</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">Registry Admin</span>
+            </div>
+            <p class="text-[11px] text-slate-400">Admissions Management System</p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Action Tools & User Menu -->
+      <div class="flex items-center gap-3">
+        
+        <button id="db-init-btn" onclick="initDatabaseTables()" title="Run Neon DB Table Migration" class="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 border border-slate-700 transition-colors">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2 1 3 3 3h10c2 0 3-1 3-3V7M4 7c0-2 1-3 3-3h10c2 0 3 1 3 3M4 7h16m-5 4v6m-4-6v6"/></svg>
+          <span>Sync Neon DB</span>
+        </button>
+
+        <button onclick="exportRegistryCsv()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <span>Export CSV</span>
+        </button>
+
+        <a href="../index.html" target="_blank" class="hidden md:flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition-colors">
+          <span>Public Website</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+        </a>
+
+        <div class="h-6 w-px bg-slate-800 hidden sm:block"></div>
+
+        <button onclick="logoutAdmin()" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold border border-rose-500/20 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          <span class="hidden sm:inline">Log Out</span>
+        </button>
+
+      </div>
+
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    
+    <!-- WELCOME & DB STATUS BAR -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/60 p-5 rounded-2xl border border-slate-800">
+      <div>
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <span>Admissions Overview</span>
+          <span class="text-xs text-slate-400 font-normal">&bull; 2026/2027 Academic Session</span>
+        </h2>
+        <p class="text-xs text-slate-400 mt-0.5">Manage student applications, review qualifications, record tuition, and issue admission letters.</p>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs">
+        <div id="db-status-pill" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span id="db-status-text">Neon Postgres Ready</span>
+        </div>
+        <button onclick="fetchAdmissionsData()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700" title="Refresh Data">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI STATS CARDS -->
+    <div class="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      
+      <!-- Total -->
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Applicants</span>
+        <div id="stat-total" class="text-3xl font-black font-serif text-white">0</div>
+        <p class="text-[11px] text-slate-500">All registered candidacies</p>
+      </div>
+
+      <!-- Pending -->
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Pending Review</span>
+        <div id="stat-pending" class="text-3xl font-black font-serif text-amber-400">0</div>
+        <p class="text-[11px] text-slate-500">Awaiting committee action</p>
+      </div>
+
+      <!-- Under Review -->
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-blue-400">Under Review</span>
+        <div id="stat-review" class="text-3xl font-black font-serif text-blue-400">0</div>
+        <p class="text-[11px] text-slate-500">Document verification</p>
+      </div>
+
+      <!-- Accepted -->
+      <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Accepted</span>
+        <div id="stat-accepted" class="text-3xl font-black font-serif text-emerald-400">0</div>
+        <p class="text-[11px] text-slate-500">Admission granted</p>
+      </div>
+
+      <!-- Total Tuition Paid -->
+      <div class="col-span-2 lg:col-span-1 p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1">
+        <span class="text-xs font-bold uppercase tracking-wider text-brand-amber">Tuition Recorded</span>
+        <div id="stat-tuition" class="text-2xl font-black font-serif text-white">0 F</div>
+        <p class="text-[11px] text-slate-500">Bursary payments logged</p>
+      </div>
+
+    </div>
+
+    <!-- FILTER TABS & SEARCH CONTROLS -->
+    <div class="bg-slate-900 rounded-3xl p-6 border border-slate-800 space-y-6 shadow-xl">
+      
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        
+        <!-- Status Filter Tabs -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button class="status-tab active px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white transition-all shadow-md" data-status="all">
+            All (<span id="count-tab-all">0</span>)
+          </button>
+          <button class="status-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all" data-status="pending">
+            Pending (<span id="count-tab-pending">0</span>)
+          </button>
+          <button class="status-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all" data-status="under_review">
+            Under Review (<span id="count-tab-review">0</span>)
+          </button>
+          <button class="status-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all" data-status="accepted">
+            Accepted (<span id="count-tab-accepted">0</span>)
+          </button>
+          <button class="status-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400 hover:text-white transition-all" data-status="rejected">
+            Rejected
+          </button>
+        </div>
+
+        <!-- School Category Dropdown & Search -->
+        <div class="flex flex-col sm:flex-row items-center gap-3">
+          
+          <select id="faculty-filter" onchange="fetchAdmissionsData()" class="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <option value="all">All Schools / Faculties</option>
+            <option value="health">School of Health Sciences</option>
+            <option value="engineering">Engineering &amp; Technology</option>
+            <option value="management">Management Sciences</option>
+            <option value="agriculture">Agriculture &amp; Food Sciences</option>
+          </select>
+
+          <div class="relative w-full sm:w-64">
+            <input type="text" id="admin-search-input" placeholder="Search applicant, ref, phone..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+            <svg class="w-4 h-4 text-slate-500 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- APPLICATIONS DATA TABLE -->
+      <div class="overflow-x-auto rounded-2xl border border-slate-800">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
+            <tr>
+              <th class="py-3.5 px-4">Ref Voucher</th>
+              <th class="py-3.5 px-4">Applicant Name</th>
+              <th class="py-3.5 px-4">Program &amp; Faculty</th>
+              <th class="py-3.5 px-4">Contact (WhatsApp / Email)</th>
+              <th class="py-3.5 px-4">Qualification</th>
+              <th class="py-3.5 px-4">Applied Date</th>
+              <th class="py-3.5 px-4">Status</th>
+              <th class="py-3.5 px-4 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="admissions-table-body" class="divide-y divide-slate-800/60 bg-slate-900/40 text-slate-300">
+            <!-- Loading Row -->
+            <tr id="table-loading-row">
+              <td colspan="8" class="text-center py-12 text-slate-400">
+                <span class="inline-block animate-spin mr-2">⏳</span> Loading admissions records from Neon Database...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Empty State Notice -->
+      <div id="table-empty-notice" class="hidden text-center py-16 text-slate-500">
+        <svg class="w-12 h-12 mx-auto text-slate-600 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <p class="text-sm font-semibold text-slate-400">No applications found matching your criteria</p>
+        <p class="text-xs text-slate-600 mt-1">Try clearing filters or search term.</p>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- APPLICANT DETAIL & STATUS DRAWER MODAL -->
+  <div id="detail-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto border border-slate-800 shadow-2xl relative text-slate-200">
+      
+      <!-- Modal Header -->
+      <div class="sticky top-0 bg-slate-900/95 backdrop-blur-md px-6 py-4 border-b border-slate-800 flex items-center justify-between z-10">
+        <div>
+          <span id="modal-ref-badge" class="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold border border-emerald-500/30">RHIBMS-2026-000000</span>
+          <h3 id="modal-fullname" class="text-lg font-bold text-white mt-1">Candidate Profile</h3>
+        </div>
+        <button onclick="closeDetailModal()" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white">&times;</button>
+      </div>
+
+      <div class="p-6 space-y-6">
+        
+        <!-- Quick Info Grid -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-slate-950 border border-slate-800 text-xs">
+          <div>
+            <span class="text-slate-500 block">Phone / WhatsApp:</span>
+            <strong id="modal-phone" class="text-white font-mono">--</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Email:</span>
+            <strong id="modal-email" class="text-white">--</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">City of Residence:</span>
+            <strong id="modal-city" class="text-white">--</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Qualification:</span>
+            <strong id="modal-qualification" class="text-emerald-400">--</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">School Attended:</span>
+            <strong id="modal-school" class="text-white">--</strong>
+          </div>
+          <div>
+            <span class="text-slate-500 block">Graduation Year:</span>
+            <strong id="modal-year" class="text-white">--</strong>
+          </div>
+        </div>
+
+        <!-- Program & Session -->
+        <div class="p-4 rounded-2xl bg-slate-800/40 border border-slate-800 space-y-1 text-xs">
+          <span class="text-slate-400 uppercase tracking-wider font-bold">Selected Academic Program</span>
+          <h4 id="modal-program" class="text-base font-bold text-emerald-300 font-serif">HND Nursing / State Registered</h4>
+          <p id="modal-session" class="text-slate-400">October 2026/2027 Main Intake &bull; Campus Hostel: No</p>
+        </div>
+
+        <!-- STATUS UPDATER FORM -->
+        <div class="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+          <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400">Admission Committee Action</h4>
+          
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Update Status</label>
+              <select id="modal-status-select" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                <option value="pending">Pending Review</option>
+                <option value="under_review">Under Review / Verification</option>
+                <option value="accepted">Accepted / Admission Granted</option>
+                <option value="rejected">Rejected / Ineligible</option>
+                <option value="enrolled">Enrolled / Matriculated</option>
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-bold text-slate-400 mb-1">Tuition Status</label>
+              <select id="modal-tuition-select" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+                <option value="unpaid">Unpaid</option>
+                <option value="partially_paid">Partially Paid</option>
+                <option value="fully_paid">Fully Paid</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Tuition Amount Recorded (FCFA)</label>
+            <input type="number" id="modal-tuition-amount" placeholder="0" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 mb-1">Internal Registry Notes (Private)</label>
+            <textarea id="modal-notes" rows="3" placeholder="e.g. Certified birth certificate and GCE A/L slips submitted. Orientation interview scheduled." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white focus:ring-2 focus:ring-emerald-500"></textarea>
+          </div>
+
+          <div class="flex items-center justify-between pt-2">
+            <button onclick="saveAdmissionChanges()" id="modal-save-btn" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+              <span>Save Changes to Neon DB</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- QUICK CANDIDATE ENGAGEMENT BUTTONS -->
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          
+          <button id="modal-whatsapp-btn" class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 transition-colors">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+            <span>Message on WhatsApp</span>
+          </button>
+
+          <button onclick="printOfficialAdmissionLetter()" class="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 flex items-center justify-center gap-2 transition-colors">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            <span>Print Official Letter</span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="../assets/js/admin.js"></script>
+</body>
+</html>

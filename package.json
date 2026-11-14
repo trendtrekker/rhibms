@@ -1,0 +1,19 @@
+{
+  "name": "rhibms",
+  "version": "1.0.0",
+  "description": "Redemption Higher Institute of Biomedical and Management Sciences (RHIBMS) - Portal & Admissions Management",
+  "main": "index.html",
+  "scripts": {
+    "start": "node -e \"console.log('Static site and Vercel serverless functions')\"",
+    "db:init": "node scripts/init-db.js"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^0.10.4",
+    "bcryptjs": "^3.0.2",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
