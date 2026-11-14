@@ -1,0 +1,515 @@
+// RHIBMS Modern Interactive Scripts
+document.addEventListener('DOMContentLoaded', () => {
+  // Mobile Navigation Toggle
+  const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileMenuClose = document.getElementById('mobile-menu-close');
+
+  if (mobileMenuBtn && mobileMenu) {
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+      document.body.classList.toggle('overflow-hidden');
+    });
+  }
+
+  if (mobileMenuClose && mobileMenu) {
+    mobileMenuClose.addEventListener('click', () => {
+      mobileMenu.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    });
+  }
+
+  // Close mobile menu on link click
+  document.querySelectorAll('#mobile-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (mobileMenu) {
+        mobileMenu.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      }
+    });
+  });
+
+  // Sticky Navbar shadow on scroll
+  const navbar = document.getElementById('main-nav');
+  window.addEventListener('scroll', () => {
+    if (navbar) {
+      if (window.scrollY > 20) {
+        navbar.classList.add('glass-nav-scrolled', 'shadow-md');
+      } else {
+        navbar.classList.remove('glass-nav-scrolled', 'shadow-md');
+      }
+    }
+  });
+
+  // Hero Slider logic
+  const heroSlides = [
+    {
+      image: 'assets/images/hero/hero-nursing-team.jpg',
+      tag: 'Accredited Healthcare Training in Cameroon',
+      title: 'Shaping Cameroon’s Healthcare & Biomedical Leaders',
+      desc: 'Nationally accredited professional training approved by Cameroon’s Ministry of Public Health and Ministry of Higher Education. 100% hands-on clinical mastery and international career pathways.',
+      primaryBtn: 'Explore Programs',
+      primaryLink: '#programs',
+      secondaryBtn: 'Apply for 2026/2027',
+      secondaryLink: '#apply'
+    },
+    {
+      image: 'assets/images/hero/hero-lab-research.jpg',
+      tag: 'Cutting-Edge Practical Laboratories',
+      title: 'Advanced Biomedical Sciences & Clinical Practice',
+      desc: 'Master diagnostics, pharmacy technology, and nursing in ultra-modern simulation wards and laboratory environments under certified medical consultants.',
+      primaryBtn: 'View Health Programs',
+      primaryLink: '#programs',
+      secondaryBtn: 'Campus Virtual Tour',
+      secondaryLink: '#facilities'
+    },
+    {
+      image: 'assets/images/hero/hero-campus-graduates.jpg',
+      tag: 'Proven Career Placement',
+      title: 'Over 3,000+ Certified Graduates in Top Hospitals & Firms',
+      desc: 'With a 90%+ employment rate, RHIBMS equips every student with industry-relevant skills, ethical leadership, and graduate startup capital grants.',
+      primaryBtn: 'Read Success Stories',
+      primaryLink: '#news',
+      secondaryBtn: 'Start Application',
+      secondaryLink: '#apply'
+    }
+  ];
+
+  let currentSlide = 0;
+  const heroBg = document.getElementById('hero-bg');
+  const heroTag = document.getElementById('hero-tag');
+  const heroTitle = document.getElementById('hero-title');
+  const heroDesc = document.getElementById('hero-desc');
+  const heroDots = document.querySelectorAll('.hero-dot');
+
+  function updateHeroSlide(index) {
+    if (!heroBg || !heroTitle) return;
+    currentSlide = index;
+    const slide = heroSlides[currentSlide];
+
+    heroBg.style.opacity = '0.3';
+    setTimeout(() => {
+      heroBg.style.backgroundImage = `url('${slide.image}')`;
+      heroBg.style.opacity = '1';
+    }, 250);
+
+    if (heroTag) heroTag.textContent = slide.tag;
+    heroTitle.innerHTML = slide.title;
+    if (heroDesc) heroDesc.textContent = slide.desc;
+
+    heroDots.forEach((dot, idx) => {
+      if (idx === currentSlide) {
+        dot.classList.add('bg-amber-400', 'w-8');
+        dot.classList.remove('bg-white/50', 'w-3');
+      } else {
+        dot.classList.remove('bg-amber-400', 'w-8');
+        dot.classList.add('bg-white/50', 'w-3');
+      }
+    });
+  }
+
+  if (heroDots.length > 0) {
+    heroDots.forEach((dot, idx) => {
+      dot.addEventListener('click', () => updateHeroSlide(idx));
+    });
+
+    setInterval(() => {
+      currentSlide = (currentSlide + 1) % heroSlides.length;
+      updateHeroSlide(currentSlide);
+    }, 7000);
+  }
+
+  // Stats Counter Animation
+  const statNumbers = document.querySelectorAll('.counter-val');
+  let statsCounted = false;
+
+  function countUpStats() {
+    if (statsCounted) return;
+    const statsSection = document.getElementById('stats-section');
+    if (!statsSection) return;
+
+    const rect = statsSection.getBoundingClientRect();
+    if (rect.top <= window.innerHeight * 0.9) {
+      statsCounted = true;
+      statNumbers.forEach(counter => {
+        const target = +counter.getAttribute('data-target');
+        const duration = 1800;
+        const step = target / (duration / 25);
+        let current = 0;
+
+        const timer = setInterval(() => {
+          current += step;
+          if (current >= target) {
+            counter.textContent = target.toLocaleString() + (counter.getAttribute('data-suffix') || '');
+            clearInterval(timer);
+          } else {
+            counter.textContent = Math.floor(current).toLocaleString() + (counter.getAttribute('data-suffix') || '');
+          }
+        }, 25);
+      });
+    }
+  }
+
+  window.addEventListener('scroll', countUpStats);
+  countUpStats(); // check on load
+
+  // Program Filtering & Search
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const programCards = document.querySelectorAll('.program-card');
+  const programSearch = document.getElementById('program-search');
+  const emptySearchNotice = document.getElementById('empty-search-notice');
+
+  function filterPrograms() {
+    const activeCategory = document.querySelector('.filter-btn.active')?.getAttribute('data-category') || 'all';
+    const query = programSearch?.value.trim().toLowerCase() || '';
+    let visibleCount = 0;
+
+    programCards.forEach(card => {
+      const category = card.getAttribute('data-category');
+      const title = card.querySelector('.program-title')?.textContent.toLowerCase() || '';
+      const desc = card.querySelector('.program-desc')?.textContent.toLowerCase() || '';
+
+      const matchesCat = activeCategory === 'all' || category === activeCategory;
+      const matchesSearch = !query || title.includes(query) || desc.includes(query);
+
+      if (matchesCat && matchesSearch) {
+        card.classList.remove('hidden');
+        visibleCount++;
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+
+    if (emptySearchNotice) {
+      if (visibleCount === 0) {
+        emptySearchNotice.classList.remove('hidden');
+      } else {
+        emptySearchNotice.classList.add('hidden');
+      }
+    }
+  }
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      filterBtns.forEach(b => {
+        b.classList.remove('active', 'bg-emerald-900', 'text-white');
+        b.classList.add('bg-white', 'text-slate-700', 'hover:bg-slate-100');
+      });
+      btn.classList.add('active', 'bg-emerald-900', 'text-white');
+      btn.classList.remove('bg-white', 'text-slate-700', 'hover:bg-slate-100');
+      filterPrograms();
+    });
+  });
+
+  if (programSearch) {
+    programSearch.addEventListener('input', filterPrograms);
+  }
+
+  // Program Details Modal
+  const programData = {
+    'nursing': {
+      title: 'HND in Nursing / State Registered Nursing (SRN)',
+      school: 'School of Health Sciences',
+      duration: '3 Years (6 Semesters)',
+      tuition: '250,000 FCFA / Year',
+      certification: 'Cameroon Ministry of Public Health & MINESUP Accredited',
+      desc: 'Our flagship nursing program provides comprehensive clinical immersion, surgical ward rotations, patient care ethics, and maternal-child health mastery. Students train directly in regional hospitals and our dedicated on-campus clinical simulation ward.',
+      careers: ['State Registered Nurse in Public & Private Hospitals', 'Clinical Care Supervisor', 'Community Healthcare Director', 'International Nursing Practicing Opportunities', 'NGO Health Officer'],
+      requirements: ['GCE A-Level in at least 2 subjects (Biology, Chemistry, Physics or related)', 'Baccalauréat (Series C, D or equivalent)', 'Medical fitness certificate'],
+      image: 'assets/images/programs/nursing.jpg'
+    },
+    'lab-science': {
+      title: 'HND in Medical Laboratory Science',
+      school: 'School of Health Sciences',
+      duration: '3 Years (6 Semesters)',
+      tuition: '250,000 FCFA / Year',
+      certification: 'National HND + Ministry of Public Health Certified',
+      desc: 'Equips students with hands-on mastery of clinical biochemistry, hematology, microbiology, immunology, and histology. Trained in automated laboratory instrumentation and diagnostic protocols.',
+      careers: ['Hospital Medical Laboratory Technologist', 'Diagnostic Center Specialist', 'Research Institute Analyst', 'Blood Transfusion Bank Officer'],
+      requirements: ['GCE A-Level with passes in Chemistry and Biology', 'Baccalauréat C or D', 'Good scientific background'],
+      image: 'assets/images/programs/lab-science.jpg'
+    },
+    'pharmacy': {
+      title: 'HND in Pharmacy Technology',
+      school: 'School of Health Sciences',
+      duration: '3 Years (6 Semesters)',
+      tuition: '250,000 FCFA / Year',
+      certification: 'Ministry of Public Health & MINESUP Certified',
+      desc: 'Prepares technicians for pharmaceutical compounding, drug dispensing, pharmacology storage regulations, prescription verification, and quality assurance.',
+      careers: ['Pharmacy Technician in Hospitals & Community Pharmacies', 'Pharmaceutical Distribution Rep', 'Drug Regulatory Compliance Assistant'],
+      requirements: ['GCE A-Level (Chemistry required, Biology/Math recommended)', 'Baccalauréat C, D or equivalent'],
+      image: 'assets/images/programs/pharmacy.jpg'
+    },
+    'physiotherapy': {
+      title: 'HND in Physiotherapy & Rehabilitation',
+      school: 'School of Health Sciences',
+      duration: '3 Years (6 Semesters)',
+      tuition: '250,000 FCFA / Year',
+      certification: 'National HND & Professional License Pathway',
+      desc: 'Teaches neuromuscular rehabilitation, therapeutic exercise, orthopedic injury recovery, pediatric physical therapy, and clinical kinesiology.',
+      careers: ['Hospital Physiotherapy Practitioner', 'Sports Team & Athletic Rehabilitation Therapist', 'Private Clinic Specialist'],
+      requirements: ['GCE A-Level passes in scientific disciplines', 'Baccalauréat C or D'],
+      image: 'assets/images/programs/physiotherapy.jpg'
+    },
+    'computer-science': {
+      title: 'HND in Computer Science & Networks',
+      school: 'School of Engineering and Technology',
+      duration: '2 Years (4 Semesters)',
+      tuition: '250,000 FCFA / Year',
+      certification: 'National HND accredited by MINESUP',
+      desc: 'Modern software engineering, network administration, cybersecurity fundamentals, cloud computing, and database management. Practical programming in high-speed computer labs.',
+      careers: ['Software Developer', 'Network & Systems Administrator', 'IT Support Specialist', 'Database Manager', 'Tech Entrepreneur'],
+      requirements: ['GCE A-Level in any science or technical subject', 'Baccalauréat C, D, TI, E or F series'],
+      image: 'assets/images/programs/computer-science.jpg'
+    },
+    'civil-engineering': {
+      title: 'HND in Civil Engineering Technology',
+      school: 'School of Engineering and Technology',
+      duration: '2 Years (4 Semesters)',
+      tuition: '250,000 FCFA / Year',
+      certification: 'National HND accredited by MINESUP',
+      desc: 'Structural engineering, CAD drafting, materials testing, site supervision, structural concrete design, and topography.',
+      careers: ['Civil Engineering Technician', 'Site Supervisor', 'Structural Drafter', 'Public Works Inspector'],
+      requirements: ['GCE A-Level in Mathematics or Physics', 'Baccalauréat C, D, E or F4'],
+      image: 'assets/images/programs/civil-engineering.jpg'
+    },
+    'banking-finance': {
+      title: 'HND in Banking & Finance',
+      school: 'School of Management Sciences',
+      duration: '2 Years (4 Semesters)',
+      tuition: '250,000 FCFA / Year',
+      certification: 'National HND accredited by MINESUP',
+      desc: 'Financial analysis, commercial banking operations, microfinance management, corporate accounting, credit risk assessment, and investment evaluation.',
+      careers: ['Bank Operations Officer', 'Credit Analyst', 'Accountant', 'Microfinance Manager', 'Financial Advisor'],
+      requirements: ['GCE A-Level in Arts, Commercial or Science subjects (Economics/Maths advantageous)', 'Baccalauréat or equivalent'],
+      image: 'assets/images/programs/banking-finance.jpg'
+    },
+    'food-technology': {
+      title: 'HND in Food Technology & Agro-Pastoral',
+      school: 'School of Agriculture & Food Sciences',
+      duration: '2 Years (4 Semesters)',
+      tuition: '250,000 FCFA / Year',
+      certification: 'National HND accredited by MINESUP',
+      desc: 'Food processing, post-harvest preservation, agro-industrial quality control, nutrition testing, and sustainable agro-pastoral enterprise management.',
+      careers: ['Food Quality Assurance Inspector', 'Agro-processing Plant Supervisor', 'Agri-business Manager'],
+      requirements: ['GCE A-Level or Baccalauréat in Science/Agric subjects', 'Passionate about food security and agribusiness'],
+      image: 'assets/images/programs/food-tech.jpg'
+    }
+  };
+
+  const programModal = document.getElementById('program-modal');
+  const programModalContent = document.getElementById('program-modal-content');
+
+  window.openProgramModal = function(key) {
+    const prog = programData[key];
+    if (!prog || !programModal) return;
+
+    document.getElementById('modal-prog-title').textContent = prog.title;
+    document.getElementById('modal-prog-school').textContent = prog.school;
+    document.getElementById('modal-prog-duration').textContent = prog.duration;
+    document.getElementById('modal-prog-tuition').textContent = prog.tuition;
+    document.getElementById('modal-prog-cert').textContent = prog.certification;
+    document.getElementById('modal-prog-desc').textContent = prog.desc;
+    document.getElementById('modal-prog-img').src = prog.image;
+
+    const careersList = document.getElementById('modal-prog-careers');
+    careersList.innerHTML = prog.careers.map(c => `<li class="flex items-center gap-2 text-slate-700 text-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>${c}</li>`).join('');
+
+    const reqsList = document.getElementById('modal-prog-reqs');
+    reqsList.innerHTML = prog.requirements.map(r => `<li class="flex items-center gap-2 text-slate-700 text-sm"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>${r}</li>`).join('');
+
+    // Pre-fill application program field if user clicks apply in modal
+    const modalApplyBtn = document.getElementById('modal-apply-btn');
+    if (modalApplyBtn) {
+      modalApplyBtn.onclick = () => {
+        closeProgramModal();
+        const appProgSelect = document.getElementById('app-program');
+        if (appProgSelect) {
+          appProgSelect.value = prog.title;
+        }
+        document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' });
+      };
+    }
+
+    programModal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  };
+
+  window.closeProgramModal = function() {
+    if (programModal) {
+      programModal.classList.add('hidden');
+      document.body.classList.remove('overflow-hidden');
+    }
+  };
+
+  // Lightbox Modal for Gallery
+  const lightboxModal = document.getElementById('lightbox-modal');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const lightboxCaption = document.getElementById('lightbox-caption');
+
+  window.openLightbox = function(src, caption) {
+    if (!lightboxModal) return;
+    lightboxImg.src = src;
+    lightboxCaption.textContent = caption || 'RHIBMS Campus & Academic Life';
+    lightboxModal.classList.remove('hidden');
+    document.body.classList.add('overflow-hidden');
+  };
+
+  window.closeLightbox = function() {
+    if (!lightboxModal) return;
+    lightboxModal.classList.add('hidden');
+    document.body.classList.remove('overflow-hidden');
+  };
+
+  // Admissions Application Multi-Step Form
+  let currentAppStep = 1;
+  const appForm = document.getElementById('admission-application-form');
+
+  window.nextAppStep = function(step) {
+    // Basic validation before next
+    if (step === 2) {
+      const name = document.getElementById('app-fullname')?.value.trim();
+      const phone = document.getElementById('app-phone')?.value.trim();
+      const email = document.getElementById('app-email')?.value.trim();
+      if (!name || !phone || !email) {
+        showToast('Please fill in your Full Name, Phone number and Email.', 'warning');
+        return;
+      }
+    } else if (step === 3) {
+      const qual = document.getElementById('app-qualification')?.value;
+      if (!qual) {
+        showToast('Please select your highest academic qualification.', 'warning');
+        return;
+      }
+    }
+
+    document.querySelectorAll('.app-step-pane').forEach(p => p.classList.add('hidden'));
+    document.getElementById(`app-step-${step}`)?.classList.remove('hidden');
+
+    // Update indicator dots
+    document.querySelectorAll('.app-step-indicator').forEach((ind, idx) => {
+      const stepNum = idx + 1;
+      if (stepNum <= step) {
+        ind.classList.add('bg-emerald-600', 'text-white');
+        ind.classList.remove('bg-slate-200', 'text-slate-600');
+      } else {
+        ind.classList.remove('bg-emerald-600', 'text-white');
+        ind.classList.add('bg-slate-200', 'text-slate-600');
+      }
+    });
+
+    currentAppStep = step;
+  };
+
+  window.prevAppStep = function(step) {
+    window.nextAppStep(step);
+  };
+
+  if (appForm) {
+    appForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const submitBtn = document.getElementById('app-submit-btn');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Generating Admission Voucher...';
+      }
+
+      setTimeout(() => {
+        const applicantName = document.getElementById('app-fullname')?.value || 'Prospective Student';
+        const prog = document.getElementById('app-program')?.value || 'Health Sciences HND';
+        const phone = document.getElementById('app-phone')?.value || '(+237) 677 172 022';
+        const refNo = 'RHIBMS-2026-' + Math.floor(100000 + Math.random() * 900000);
+
+        // Hide form panes, show success voucher
+        document.querySelectorAll('.app-step-pane').forEach(p => p.classList.add('hidden'));
+        const successPane = document.getElementById('app-step-success');
+        if (successPane) {
+          successPane.classList.remove('hidden');
+          document.getElementById('voucher-ref').textContent = refNo;
+          document.getElementById('voucher-name').textContent = applicantName;
+          document.getElementById('voucher-prog').textContent = prog;
+          document.getElementById('voucher-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        showToast('Application submitted successfully! Keep your reference number.', 'success');
+      }, 1200);
+    });
+  }
+
+  // Toast Notification System
+  function showToast(message, type = 'info') {
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+      toastContainer = document.createElement('div');
+      toastContainer.id = 'toast-container';
+      toastContainer.className = 'fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none';
+      document.body.appendChild(toastContainer);
+    }
+
+    const toast = document.createElement('div');
+    const bgColors = {
+      success: 'bg-emerald-800 text-white border-l-4 border-amber-400',
+      warning: 'bg-amber-600 text-white border-l-4 border-white',
+      info: 'bg-slate-900 text-white border-l-4 border-emerald-400'
+    };
+
+    toast.className = `${bgColors[type] || bgColors.info} p-4 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-medium transition-all transform translate-y-4 opacity-0 pointer-events-auto max-w-md`;
+    toast.innerHTML = `
+      <div class="flex-1">${message}</div>
+      <button class="text-white/80 hover:text-white text-lg leading-none" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    toastContainer.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.classList.remove('translate-y-4', 'opacity-0');
+    });
+
+    setTimeout(() => {
+      toast.classList.add('opacity-0', 'translate-y-2');
+      setTimeout(() => toast.remove(), 400);
+    }, 4500);
+  }
+
+  window.showToast = showToast;
+
+  // FAQ Accordion
+  window.toggleFaq = function(button) {
+    const answer = button.nextElementSibling;
+    const icon = button.querySelector('.faq-icon');
+    if (!answer) return;
+
+    if (answer.classList.contains('hidden')) {
+      answer.classList.remove('hidden');
+      if (icon) icon.style.transform = 'rotate(180deg)';
+    } else {
+      answer.classList.add('hidden');
+      if (icon) icon.style.transform = 'rotate(0deg)';
+    }
+  };
+
+  // Contact Form Submission Handler
+  const contactForm = document.getElementById('contact-form');
+  if (contactForm) {
+    contactForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const btn = contactForm.querySelector('button[type="submit"]');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Sending Message...';
+      }
+      setTimeout(() => {
+        showToast('Thank you! Your inquiry has been sent to our Admissions Desk. We will call you back shortly.', 'success');
+        contactForm.reset();
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = 'Send Message';
+        }
+      }, 1000);
+    });
+  }
+
+  // Print voucher handler
+  window.printVoucher = function() {
+    window.print();
+  };
+});
