@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Hero Slider logic
   const heroSlides = [
     {
-      image: 'assets/images/hero/hero-nursing-team.jpg',
+      image: 'assets/images/hero/hero-nursing-editorial.jpg',
       tag: 'Accredited Healthcare Training in Cameroon',
       title: 'Shaping Cameroon’s Healthcare & Biomedical Leaders',
       desc: 'Nationally accredited professional training approved by Cameroon’s Ministry of Public Health and Ministry of Higher Education. 100% hands-on clinical mastery and international career pathways.',
@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryLink: '#apply'
     },
     {
-      image: 'assets/images/hero/hero-lab-research.jpg',
+      image: 'assets/images/hero/hero-research-editorial.jpg',
       tag: 'Cutting-Edge Practical Laboratories',
       title: 'Advanced Biomedical Sciences & Clinical Practice',
       desc: 'Master diagnostics, pharmacy technology, and nursing in ultra-modern simulation wards and laboratory environments under certified medical consultants.',
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
       secondaryLink: '#facilities'
     },
     {
-      image: 'assets/images/hero/hero-campus-graduates.jpg',
+      image: 'assets/images/hero/hero-campus-editorial.jpg',
       tag: 'Proven Career Placement',
       title: 'Over 3,000+ Certified Graduates in Top Hospitals & Firms',
       desc: 'With a 90%+ employment rate, RHIBMS equips every student with industry-relevant skills, ethical leadership, and graduate startup capital grants.',

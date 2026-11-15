@@ -21,7 +21,7 @@
     const container = document.getElementById('hero-section');
     const canvas = document.getElementById('hero-three-canvas');
 
-    if (!container || !canvas) return;
+    if (!container || !canvas || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
     let width = container.clientWidth;
     let height = container.clientHeight;
@@ -217,9 +217,15 @@
     // Animation Loop
     let clock = new THREE.Clock();
 
+    let inView = true;
+    new IntersectionObserver(([entry]) => {
+      inView = entry.isIntersecting;
+    }).observe(container);
+
     function animateThree() {
       requestAnimationFrame(animateThree);
-      const delta = clock.getDelta();
+      const delta = Math.min(clock.getDelta(), 0.05);
+      if (!inView || document.hidden) return;
       const elapsedTime = clock.getElapsedTime();
 
       // Continuous rotation
