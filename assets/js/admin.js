@@ -2,7 +2,7 @@
 (function() {
   const token = localStorage.getItem('rhibms_admin_token');
   if (!token) {
-    window.location.href = 'login.html';
+    window.location.replace('/admin/login');
     return;
   }
 
@@ -11,6 +11,25 @@
   let searchQuery = '';
   let activeAdmissions = [];
   let selectedAdmission = null;
+  const pageSize = 50;
+  let offset = 0;
+  let latestRequest = 0;
+
+  const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
+
+  async function adminFetch(url, options = {}) {
+    const headers = { ...options.headers, Authorization: `Bearer ${token}` };
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401) logoutAdmin();
+    return response;
+  }
+
+  function refreshAdmissions() {
+    offset = 0;
+    return fetchAdmissionsData();
+  }
 
   document.addEventListener('DOMContentLoaded', () => {
     initEvents();
@@ -30,8 +49,17 @@
         tab.classList.remove('bg-slate-800', 'text-slate-400');
 
         currentStatus = tab.getAttribute('data-status');
-        fetchAdmissionsData();
+        refreshAdmissions();
       });
+    });
+
+    document.getElementById('previous-page').addEventListener('click', () => {
+      offset = Math.max(0, offset - pageSize);
+      fetchAdmissionsData();
+    });
+    document.getElementById('next-page').addEventListener('click', () => {
+      offset += pageSize;
+      fetchAdmissionsData();
     });
 
     // Search Input with Debounce
@@ -42,7 +70,7 @@
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
           searchQuery = e.target.value.trim();
-          fetchAdmissionsData();
+          refreshAdmissions();
         }, 300);
       });
     }
@@ -51,11 +79,13 @@
   // Fetch KPI Stats
   async function fetchStats() {
     try {
-      const res = await fetch('/api/admin/stats', {
+      const res = await adminFetch('/api/admin/stats', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
-      if (data.success && data.stats) {
+      if (!res.ok || !data.success) throw new Error('Stats unavailable');
+      document.getElementById('db-status-text').textContent = 'Neon registry connected';
+      if (data.stats) {
         const s = data.stats;
         document.getElementById('stat-total').textContent = (s.total || 0).toLocaleString();
         document.getElementById('stat-pending').textContent = (s.pending || 0).toLocaleString();
@@ -69,12 +99,19 @@
         document.getElementById('count-tab-accepted').textContent = s.accepted || 0;
       }
     } catch (e) {
-      console.warn('Could not fetch remote stats:', e);
+      document.getElementById('db-status-text').textContent = 'Registry unavailable';
     }
   }
 
   // Fetch Admissions Data
   async function fetchAdmissionsData() {
+    const request = ++latestRequest;
+    const previous = document.getElementById('previous-page');
+    const next = document.getElementById('next-page');
+    const pageLabel = document.getElementById('page-label');
+    previous.disabled = true;
+    next.disabled = true;
+    pageLabel.textContent = '';
     const tableBody = document.getElementById('admissions-table-body');
     const emptyNotice = document.getElementById('table-empty-notice');
     const facultySelect = document.getElementById('faculty-filter');
@@ -93,25 +130,30 @@
       const queryParams = new URLSearchParams({
         status: currentStatus,
         category: currentCategory,
-        search: searchQuery
+        search: searchQuery, limit: pageSize, offset
       });
 
-      const res = await fetch(`/api/admin/admissions?${queryParams.toString()}`, {
+      const res = await adminFetch(`/api/admin/admissions?${queryParams.toString()}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
       const data = await res.json();
 
-      if (data.success && Array.isArray(data.admissions)) {
-        activeAdmissions = data.admissions;
-        renderAdmissionsTable(activeAdmissions);
-      } else {
-        tableBody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-rose-400 font-medium">Failed to retrieve data. Set DATABASE_URL.</td></tr>`;
+      if (request !== latestRequest) return;
+      if (!res.ok || !data.success || !Array.isArray(data.admissions)) throw new Error('Registry unavailable');
+      if (offset && offset >= data.total) {
+        offset = data.total ? Math.floor((data.total - 1) / pageSize) * pageSize : 0;
+        return fetchAdmissionsData();
       }
-    } catch (err) {
-      console.warn('API Error, using local fallback:', err);
-      // Fallback sample data to test UI preview
-      renderFallbackDemoData();
+      activeAdmissions = data.admissions;
+      renderAdmissionsTable(activeAdmissions);
+      previous.disabled = offset === 0;
+      next.disabled = offset + pageSize >= data.total;
+      pageLabel.textContent = data.total ? `${offset + 1}–${offset + activeAdmissions.length} of ${data.total}` : '0 applications';
+    } catch {
+      if (request !== latestRequest) return;
+      activeAdmissions = [];
+      tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-rose-400" role="alert">Could not load the admissions registry. Use Refresh to retry.</td></tr>';
     }
   }
 
@@ -123,7 +165,7 @@
       'rejected': '<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/30">Rejected</span>',
       'enrolled': '<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30">Enrolled</span>'
     };
-    return badges[status] || `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-400">${status || 'Pending'}</span>`;
+    return badges[status] || `<span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-slate-400">${escapeHtml(status || 'Pending')}</span>`;
   }
 
   function renderAdmissionsTable(items) {
@@ -141,15 +183,15 @@
       const dateFormatted = new Date(item.created_at || Date.now()).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
       return `
         <tr class="hover:bg-slate-800/40 transition-colors">
-          <td class="py-3.5 px-4 font-mono font-bold text-emerald-400">${item.reference_no}</td>
-          <td class="py-3.5 px-4 font-bold text-white">${item.full_name}<br><span class="text-[10px] text-slate-500 font-normal">${item.city || 'Cameroon'}</span></td>
-          <td class="py-3.5 px-4"><span class="font-medium text-slate-200">${item.program}</span><br><span class="text-[10px] text-slate-500 uppercase font-semibold">${item.school_category || 'Faculty'}</span></td>
-          <td class="py-3.5 px-4 text-slate-300 font-mono text-[11px]">${item.phone}<br><span class="text-slate-500 text-[10px]">${item.email}</span></td>
-          <td class="py-3.5 px-4 text-slate-300">${item.qualification}</td>
+          <td class="py-3.5 px-4 font-mono font-bold text-emerald-400">${escapeHtml(item.reference_no)}</td>
+          <td class="py-3.5 px-4 font-bold text-white">${escapeHtml(item.full_name)}<br><span class="text-[10px] text-slate-500 font-normal">${escapeHtml(item.city || 'Cameroon')}</span></td>
+          <td class="py-3.5 px-4"><span class="font-medium text-slate-200">${escapeHtml(item.program)}</span><br><span class="text-[10px] text-slate-500 uppercase font-semibold">${escapeHtml(item.school_category || 'Faculty')}</span></td>
+          <td class="py-3.5 px-4 text-slate-300 font-mono text-[11px]">${escapeHtml(item.phone)}<br><span class="text-slate-500 text-[10px]">${escapeHtml(item.email)}</span></td>
+          <td class="py-3.5 px-4 text-slate-300">${escapeHtml(item.qualification)}</td>
           <td class="py-3.5 px-4 text-slate-400">${dateFormatted}</td>
           <td class="py-3.5 px-4">${getStatusBadge(item.status)}</td>
           <td class="py-3.5 px-4 text-right">
-            <button onclick="openDetailModal(${item.id})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-sm">
+            <button onclick="openDetailModal(${Number(item.id)})" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-colors shadow-sm">
               Manage
             </button>
           </td>
@@ -158,55 +200,9 @@
     }).join('');
   }
 
-  function renderFallbackDemoData() {
-    activeAdmissions = [
-      {
-        id: 1,
-        reference_no: 'RHIBMS-2026-891042',
-        full_name: 'Bate Sarah Enow',
-        phone: '(+237) 677 123 456',
-        email: 'sarah.bate@gmail.com',
-        city: 'Buea, Cameroon',
-        qualification: 'GCE Advanced Level',
-        graduation_year: 2024,
-        school_attended: 'Bilingual Grammar School Molyko',
-        program: 'HND Nursing / State Registered Nursing (SRN)',
-        school_category: 'health',
-        intake_session: 'October 2026/2027 Main Intake',
-        hostel_needed: false,
-        status: 'pending',
-        admin_notes: 'Transcripts in Biology and Chemistry submitted.',
-        tuition_status: 'unpaid',
-        tuition_amount_paid: 0,
-        created_at: new Date().toISOString()
-      },
-      {
-        id: 2,
-        reference_no: 'RHIBMS-2026-443210',
-        full_name: 'Tanyi Junior Besong',
-        phone: '(+237) 654 987 321',
-        email: 'tanyi.junior@yahoo.com',
-        city: 'Limbe, Cameroon',
-        qualification: 'Baccalauréat Series D',
-        graduation_year: 2023,
-        school_attended: 'Lycee Classique de Limbe',
-        program: 'HND in Medical Laboratory Science',
-        school_category: 'health',
-        intake_session: 'October 2026/2027 Main Intake',
-        hostel_needed: true,
-        status: 'accepted',
-        admin_notes: 'Orientation interview completed successfully. Acceptance granted.',
-        tuition_status: 'partially_paid',
-        tuition_amount_paid: 100000,
-        created_at: new Date(Date.now() - 86400000).toISOString()
-      }
-    ];
-    renderAdmissionsTable(activeAdmissions);
-  }
-
   // Open Detail Drawer Modal
   window.openDetailModal = function(id) {
-    selectedAdmission = activeAdmissions.find(a => a.id === id);
+    selectedAdmission = activeAdmissions.find(a => Number(a.id) === id);
     if (!selectedAdmission) return;
 
     document.getElementById('modal-ref-badge').textContent = selectedAdmission.reference_no;
@@ -216,7 +212,7 @@
     document.getElementById('modal-city').textContent = selectedAdmission.city || 'Cameroon';
     document.getElementById('modal-qualification').textContent = selectedAdmission.qualification;
     document.getElementById('modal-school').textContent = selectedAdmission.school_attended || 'Not specified';
-    document.getElementById('modal-year').textContent = selectedAdmission.graduation_year || '2024';
+    document.getElementById('modal-year').textContent = selectedAdmission.graduation_year || 'Not specified';
     document.getElementById('modal-program').textContent = selectedAdmission.program;
     document.getElementById('modal-session').textContent = `${selectedAdmission.intake_session} • Campus Hostel: ${selectedAdmission.hostel_needed ? 'Yes' : 'No'}`;
 
@@ -234,6 +230,7 @@
       window.open(`https://wa.me/${cleanPhone}?text=${msg}`, '_blank');
     };
 
+    document.getElementById('print-admission-letter').disabled = !['accepted', 'enrolled'].includes(selectedAdmission.status);
     document.getElementById('detail-modal').classList.remove('hidden');
   };
 
@@ -254,7 +251,7 @@
     const newNotes = document.getElementById('modal-notes').value;
 
     try {
-      const res = await fetch('/api/admin/status', {
+      const res = await adminFetch('/api/admin/status', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -282,10 +279,7 @@
         alert(data.error || 'Failed to update database.');
       }
     } catch (err) {
-      // Local preview fallback
-      selectedAdmission.status = newStatus;
-      closeDetailModal();
-      fetchAdmissionsData();
+      alert('The changes could not be confirmed. Refresh the registry before retrying.');
     } finally {
       saveBtn.disabled = false;
       saveBtn.innerHTML = '<span>Save Changes to Neon DB</span>';
@@ -293,43 +287,31 @@
   };
 
   // Export Registry CSV
-  window.exportRegistryCsv = function() {
-    window.open(`/api/admin/export?token=${token}`, '_blank');
-  };
-
-  // Run Neon DB Initialization
-  window.initDatabaseTables = async function() {
-    const btn = document.getElementById('db-init-btn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="animate-spin mr-1">⏳</span> Syncing...';
-
+  window.exportRegistryCsv = async function() {
     try {
-      const res = await fetch('/api/db/init');
-      const data = await res.json();
-      if (data.success) {
-        alert('Neon Database tables verified and initialized successfully!');
-        fetchStats();
-        fetchAdmissionsData();
-      } else {
-        alert(data.error || 'Database initialization error. Check DATABASE_URL in Vercel.');
-      }
-    } catch (err) {
-      alert('Could not reach /api/db/init. Make sure DATABASE_URL is configured.');
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = '<span>Sync Neon DB</span>';
+      const response = await adminFetch('/api/admin/export');
+      if (!response.ok) throw new Error('Export failed');
+      const url = URL.createObjectURL(await response.blob());
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'rhibms-admissions.csv';
+      link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      alert('Could not export the admissions registry.');
     }
   };
 
   // Print Official Admission Letter
   window.printOfficialAdmissionLetter = function() {
-    if (!selectedAdmission) return;
+    if (!selectedAdmission || !['accepted', 'enrolled'].includes(selectedAdmission.status)) return;
     const printWin = window.open('', '_blank');
+    if (!printWin) return;
     printWin.document.write(`
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Admission Letter - ${selectedAdmission.reference_no}</title>
+        <title>Admission Letter - ${escapeHtml(selectedAdmission.reference_no)}</title>
         <style>
           body { font-family: 'Times New Roman', serif; padding: 40px; color: #111; line-height: 1.6; }
           .header { text-align: center; border-bottom: 2px solid #064e3b; padding-bottom: 15px; margin-bottom: 30px; }
@@ -341,17 +323,18 @@
       </head>
       <body>
         <div class="header">
+          <img class="logo" src="/assets/images/branding/rhibms-crest.png" alt="RHIBMS crest">
           <h2>REDEMPTION HIGHER INSTITUTE OF BIOMEDICAL AND MANAGEMENT SCIENCES (RHIBMS)</h2>
           <p class="badge">Approved by Cameroon Ministry of Public Health &bull; Ministry of Higher Education</p>
           <p>Molyko, Buea, Southwest Region, Cameroon | info@rhibms.com | (+237) 677 172 022</p>
         </div>
         <p><strong>Date:</strong> ${new Date().toLocaleDateString('en-GB')}</p>
-        <p><strong>Application Ref:</strong> <span class="ref">${selectedAdmission.reference_no}</span></p>
-        <p><strong>To:</strong> ${selectedAdmission.full_name}<br><strong>Contact:</strong> ${selectedAdmission.phone}</p>
+        <p><strong>Application Ref:</strong> <span class="ref">${escapeHtml(selectedAdmission.reference_no)}</span></p>
+        <p><strong>To:</strong> ${escapeHtml(selectedAdmission.full_name)}<br><strong>Contact:</strong> ${escapeHtml(selectedAdmission.phone)}</p>
         <h3>OFFICIAL PROVISIONAL ADMISSION NOTIFICATION (2026/2027)</h3>
-        <p>Dear <strong>${selectedAdmission.full_name}</strong>,</p>
-        <p>We are pleased to inform you that upon review of your academic qualifications (${selectedAdmission.qualification}), the Admissions Committee of RHIBMS has offered you admission into the following accredited program:</p>
-        <p style="padding: 10px; background: #f0fdf4; border-left: 4px solid #064e3b;"><strong>Program:</strong> ${selectedAdmission.program}<br><strong>Session:</strong> ${selectedAdmission.intake_session}</p>
+        <p>Dear <strong>${escapeHtml(selectedAdmission.full_name)}</strong>,</p>
+        <p>We are pleased to inform you that upon review of your academic qualifications (${escapeHtml(selectedAdmission.qualification)}), the Admissions Committee of RHIBMS has offered you admission into the following accredited program:</p>
+        <p style="padding: 10px; background: #f0fdf4; border-left: 4px solid #064e3b;"><strong>Program:</strong> ${escapeHtml(selectedAdmission.program)}<br><strong>Session:</strong> ${escapeHtml(selectedAdmission.intake_session)}</p>
         <p>Please present this document to the Bursary &amp; Registry Office at our Buea Campus (Tarred Malingo, Opposite Pres Hostel) to finalize registration formalities and secure your enrollment slot.</p>
         <br><br>
         <div style="display: flex; justify-content: space-between; margin-top: 40px;">
@@ -373,8 +356,8 @@
   window.logoutAdmin = function() {
     localStorage.removeItem('rhibms_admin_token');
     localStorage.removeItem('rhibms_admin_user');
-    window.location.href = 'login.html';
+    window.location.replace('/admin/login');
   };
 
-  window.fetchAdmissionsData = fetchAdmissionsData;
+  window.fetchAdmissionsData = refreshAdmissions;
 })();

@@ -155,193 +155,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Program Filtering & Search
   const filterBtns = document.querySelectorAll('.filter-btn');
-  const programCards = document.querySelectorAll('.program-card');
-  const programSearch = document.getElementById('program-search');
-  const emptySearchNotice = document.getElementById('empty-search-notice');
-
-  function filterPrograms() {
-    const activeCategory = document.querySelector('.filter-btn.active')?.getAttribute('data-category') || 'all';
-    const query = programSearch?.value.trim().toLowerCase() || '';
-    let visibleCount = 0;
-
-    programCards.forEach(card => {
-      const category = card.getAttribute('data-category');
-      const title = card.querySelector('.program-title')?.textContent.toLowerCase() || '';
-      const desc = card.querySelector('.program-desc')?.textContent.toLowerCase() || '';
-
-      const matchesCat = activeCategory === 'all' || category === activeCategory;
-      const matchesSearch = !query || title.includes(query) || desc.includes(query);
-
-      if (matchesCat && matchesSearch) {
-        card.classList.remove('hidden');
-        visibleCount++;
-      } else {
-        card.classList.add('hidden');
-      }
-    });
-
-    if (emptySearchNotice) {
-      if (visibleCount === 0) {
-        emptySearchNotice.classList.remove('hidden');
-      } else {
-        emptySearchNotice.classList.add('hidden');
-      }
-    }
-  }
-
-  filterBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      filterBtns.forEach(b => {
-        b.classList.remove('active', 'bg-emerald-900', 'text-white');
-        b.classList.add('bg-white', 'text-slate-700', 'hover:bg-slate-100');
-      });
-      btn.classList.add('active', 'bg-emerald-900', 'text-white');
-      btn.classList.remove('bg-white', 'text-slate-700', 'hover:bg-slate-100');
-      filterPrograms();
-    });
-  });
-
-  if (programSearch) {
-    programSearch.addEventListener('input', filterPrograms);
-  }
-
-  // Program Details Modal
-  const programData = {
-    'nursing': {
-      title: 'HND in Nursing / State Registered Nursing (SRN)',
-      school: 'School of Health Sciences',
-      duration: '3 Years (6 Semesters)',
-      tuition: '250,000 FCFA / Year',
-      certification: 'Cameroon Ministry of Public Health & MINESUP Accredited',
-      desc: 'Our flagship nursing program provides comprehensive clinical immersion, surgical ward rotations, patient care ethics, and maternal-child health mastery. Students train directly in regional hospitals and our dedicated on-campus clinical simulation ward.',
-      careers: ['State Registered Nurse in Public & Private Hospitals', 'Clinical Care Supervisor', 'Community Healthcare Director', 'International Nursing Practicing Opportunities', 'NGO Health Officer'],
-      requirements: ['GCE A-Level in at least 2 subjects (Biology, Chemistry, Physics or related)', 'Baccalauréat (Series C, D or equivalent)', 'Medical fitness certificate'],
-      image: 'assets/images/programs/nursing.jpg'
-    },
-    'lab-science': {
-      title: 'HND in Medical Laboratory Science',
-      school: 'School of Health Sciences',
-      duration: '3 Years (6 Semesters)',
-      tuition: '250,000 FCFA / Year',
-      certification: 'National HND + Ministry of Public Health Certified',
-      desc: 'Equips students with hands-on mastery of clinical biochemistry, hematology, microbiology, immunology, and histology. Trained in automated laboratory instrumentation and diagnostic protocols.',
-      careers: ['Hospital Medical Laboratory Technologist', 'Diagnostic Center Specialist', 'Research Institute Analyst', 'Blood Transfusion Bank Officer'],
-      requirements: ['GCE A-Level with passes in Chemistry and Biology', 'Baccalauréat C or D', 'Good scientific background'],
-      image: 'assets/images/programs/lab-science.jpg'
-    },
-    'pharmacy': {
-      title: 'HND in Pharmacy Technology',
-      school: 'School of Health Sciences',
-      duration: '3 Years (6 Semesters)',
-      tuition: '250,000 FCFA / Year',
-      certification: 'Ministry of Public Health & MINESUP Certified',
-      desc: 'Prepares technicians for pharmaceutical compounding, drug dispensing, pharmacology storage regulations, prescription verification, and quality assurance.',
-      careers: ['Pharmacy Technician in Hospitals & Community Pharmacies', 'Pharmaceutical Distribution Rep', 'Drug Regulatory Compliance Assistant'],
-      requirements: ['GCE A-Level (Chemistry required, Biology/Math recommended)', 'Baccalauréat C, D or equivalent'],
-      image: 'assets/images/programs/pharmacy.jpg'
-    },
-    'physiotherapy': {
-      title: 'HND in Physiotherapy & Rehabilitation',
-      school: 'School of Health Sciences',
-      duration: '3 Years (6 Semesters)',
-      tuition: '250,000 FCFA / Year',
-      certification: 'National HND & Professional License Pathway',
-      desc: 'Teaches neuromuscular rehabilitation, therapeutic exercise, orthopedic injury recovery, pediatric physical therapy, and clinical kinesiology.',
-      careers: ['Hospital Physiotherapy Practitioner', 'Sports Team & Athletic Rehabilitation Therapist', 'Private Clinic Specialist'],
-      requirements: ['GCE A-Level passes in scientific disciplines', 'Baccalauréat C or D'],
-      image: 'assets/images/programs/physiotherapy.jpg'
-    },
-    'computer-science': {
-      title: 'HND in Computer Science & Networks',
-      school: 'School of Engineering and Technology',
-      duration: '2 Years (4 Semesters)',
-      tuition: '250,000 FCFA / Year',
-      certification: 'National HND accredited by MINESUP',
-      desc: 'Modern software engineering, network administration, cybersecurity fundamentals, cloud computing, and database management. Practical programming in high-speed computer labs.',
-      careers: ['Software Developer', 'Network & Systems Administrator', 'IT Support Specialist', 'Database Manager', 'Tech Entrepreneur'],
-      requirements: ['GCE A-Level in any science or technical subject', 'Baccalauréat C, D, TI, E or F series'],
-      image: 'assets/images/programs/computer-science.jpg'
-    },
-    'civil-engineering': {
-      title: 'HND in Civil Engineering Technology',
-      school: 'School of Engineering and Technology',
-      duration: '2 Years (4 Semesters)',
-      tuition: '250,000 FCFA / Year',
-      certification: 'National HND accredited by MINESUP',
-      desc: 'Structural engineering, CAD drafting, materials testing, site supervision, structural concrete design, and topography.',
-      careers: ['Civil Engineering Technician', 'Site Supervisor', 'Structural Drafter', 'Public Works Inspector'],
-      requirements: ['GCE A-Level in Mathematics or Physics', 'Baccalauréat C, D, E or F4'],
-      image: 'assets/images/programs/civil-engineering.jpg'
-    },
-    'banking-finance': {
-      title: 'HND in Banking & Finance',
-      school: 'School of Management Sciences',
-      duration: '2 Years (4 Semesters)',
-      tuition: '250,000 FCFA / Year',
-      certification: 'National HND accredited by MINESUP',
-      desc: 'Financial analysis, commercial banking operations, microfinance management, corporate accounting, credit risk assessment, and investment evaluation.',
-      careers: ['Bank Operations Officer', 'Credit Analyst', 'Accountant', 'Microfinance Manager', 'Financial Advisor'],
-      requirements: ['GCE A-Level in Arts, Commercial or Science subjects (Economics/Maths advantageous)', 'Baccalauréat or equivalent'],
-      image: 'assets/images/programs/banking-finance.jpg'
-    },
-    'food-technology': {
-      title: 'HND in Food Technology & Agro-Pastoral',
-      school: 'School of Agriculture & Food Sciences',
-      duration: '2 Years (4 Semesters)',
-      tuition: '250,000 FCFA / Year',
-      certification: 'National HND accredited by MINESUP',
-      desc: 'Food processing, post-harvest preservation, agro-industrial quality control, nutrition testing, and sustainable agro-pastoral enterprise management.',
-      careers: ['Food Quality Assurance Inspector', 'Agro-processing Plant Supervisor', 'Agri-business Manager'],
-      requirements: ['GCE A-Level or Baccalauréat in Science/Agric subjects', 'Passionate about food security and agribusiness'],
-      image: 'assets/images/programs/food-tech.jpg'
-    }
-  };
-
-  const programModal = document.getElementById('program-modal');
-  const programModalContent = document.getElementById('program-modal-content');
-
-  window.openProgramModal = function(key) {
-    const prog = programData[key];
-    if (!prog || !programModal) return;
-
-    document.getElementById('modal-prog-title').textContent = prog.title;
-    document.getElementById('modal-prog-school').textContent = prog.school;
-    document.getElementById('modal-prog-duration').textContent = prog.duration;
-    document.getElementById('modal-prog-tuition').textContent = prog.tuition;
-    document.getElementById('modal-prog-cert').textContent = prog.certification;
-    document.getElementById('modal-prog-desc').textContent = prog.desc;
-    document.getElementById('modal-prog-img').src = prog.image;
-
-    const careersList = document.getElementById('modal-prog-careers');
-    careersList.innerHTML = prog.careers.map(c => `<li class="flex items-center gap-2 text-slate-700 text-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>${c}</li>`).join('');
-
-    const reqsList = document.getElementById('modal-prog-reqs');
-    reqsList.innerHTML = prog.requirements.map(r => `<li class="flex items-center gap-2 text-slate-700 text-sm"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>${r}</li>`).join('');
-
-    // Pre-fill application program field if user clicks apply in modal
-    const modalApplyBtn = document.getElementById('modal-apply-btn');
-    if (modalApplyBtn) {
-      modalApplyBtn.onclick = () => {
-        closeProgramModal();
-        const appProgSelect = document.getElementById('app-program');
-        if (appProgSelect) {
-          appProgSelect.value = prog.title;
-        }
-        document.getElementById('apply')?.scrollIntoView({ behavior: 'smooth' });
-      };
-    }
-
-    programModal.classList.remove('hidden');
-    document.body.classList.add('overflow-hidden');
-  };
-
-  window.closeProgramModal = function() {
-    if (programModal) {
-      programModal.classList.add('hidden');
-      document.body.classList.remove('overflow-hidden');
-    }
-  };
-
   // Lightbox Modal for Gallery
   const lightboxModal = document.getElementById('lightbox-modal');
   const lightboxImg = document.getElementById('lightbox-img');
@@ -421,7 +234,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const qualification = document.getElementById('app-qualification')?.value || 'GCE A-Level';
       const graduationYear = document.getElementById('app-year')?.value || '';
       const schoolAttended = document.getElementById('app-school')?.value || '';
-      const prog = document.getElementById('app-program')?.value || 'HND in Nursing / State Registered Nursing (SRN)';
+      const prog = document.getElementById('app-program')?.value || '';
       const session = document.getElementById('app-session')?.value || 'October 2026/2027 Main Intake';
       const hostelNeeded = document.getElementById('app-hostel')?.value === 'yes';
 
@@ -444,7 +257,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const result = await response.json();
-        const refNo = result.referenceNo || ('RHIBMS-2026-' + Math.floor(100000 + Math.random() * 900000));
+        if (!response.ok || !result.success || !result.referenceNo) {
+          throw new Error(result.error || 'The application could not be saved. Please try again.');
+        }
+        const refNo = result.referenceNo;
 
         // Hide form panes, show success voucher
         document.querySelectorAll('.app-step-pane').forEach(p => p.classList.add('hidden'));
@@ -459,18 +275,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         showToast('Application registered successfully! Keep your reference voucher code.', 'success');
       } catch (err) {
-        console.warn('Network fallback:', err);
-        const refNo = 'RHIBMS-2026-' + Math.floor(100000 + Math.random() * 900000);
-        document.querySelectorAll('.app-step-pane').forEach(p => p.classList.add('hidden'));
-        const successPane = document.getElementById('app-step-success');
-        if (successPane) {
-          successPane.classList.remove('hidden');
-          document.getElementById('voucher-ref').textContent = refNo;
-          document.getElementById('voucher-name').textContent = applicantName;
-          document.getElementById('voucher-prog').textContent = prog;
-          document.getElementById('voucher-date').textContent = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-        }
-        showToast('Application recorded! Keep your reference number.', 'info');
+        showToast(err.message || 'Unable to submit. Please try again.', 'error');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
@@ -499,10 +304,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     toast.className = `${bgColors[type] || bgColors.info} p-4 rounded-xl shadow-2xl flex items-center gap-3 text-sm font-medium transition-all transform translate-y-4 opacity-0 pointer-events-auto max-w-md`;
     toast.innerHTML = `
-      <div class="flex-1">${message}</div>
+      <div class="flex-1"></div>
       <button class="text-white/80 hover:text-white text-lg leading-none" onclick="this.parentElement.remove()">&times;</button>
     `;
 
+    toast.firstElementChild.textContent = message;
     toastContainer.appendChild(toast);
     requestAnimationFrame(() => {
       toast.classList.remove('translate-y-4', 'opacity-0');

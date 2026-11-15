@@ -2,32 +2,14 @@ const { getDb } = require('../../lib/db');
 const { authenticateAdmin } = require('../../lib/auth');
 
 module.exports = async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
   const admin = authenticateAdmin(req);
   if (!admin) {
     return res.status(401).json({ success: false, error: 'Unauthorized.' });
   }
 
   try {
-    let sql;
-    try {
-      sql = getDb();
-    } catch (e) {
-      return res.status(200).json({
-        success: true,
-        stats: {
-          total: 0,
-          pending: 0,
-          under_review: 0,
-          accepted: 0,
-          rejected: 0,
-          enrolled: 0,
-          totalTuition: 0,
-          byCategory: { health: 0, engineering: 0, management: 0, agriculture: 0 },
-          recent: []
-        },
-        warning: 'Neon database not connected yet.'
-      });
-    }
+    const sql = getDb();
 
     const counts = await sql`
       SELECT 
@@ -48,7 +30,7 @@ module.exports = async function handler(req, res) {
     const recent = await sql`
       SELECT id, reference_no, full_name, program, school_category, status, created_at
       FROM admissions
-      ORDER BY created_at DESC
+      ORDER BY created_at DESC, id DESC
       LIMIT 5;
     `;
 

@@ -64,18 +64,19 @@ async function initDatabase() {
     );
   `;
 
-  // Check if default admin exists, if not create admin
-  const existingAdmins = await sql`
-    SELECT id FROM admin_users WHERE email = 'admin@rhibms.com' LIMIT 1;
-  `;
-
-  if (existingAdmins.length === 0) {
-    const passwordHash = await bcrypt.hash('admin12345', 10);
+  const email = process.env.ADMIN_EMAIL?.trim().toLowerCase();
+  const password = process.env.ADMIN_PASSWORD;
+  if (email || password) {
+    if (!email || !email.includes('@') || !password || password.length < 14 || Buffer.byteLength(password) > 72) {
+      throw new Error('Supply ADMIN_EMAIL and a new ADMIN_PASSWORD of at least 14 characters and at most 72 bytes.');
+    }
+    const hash = await bcrypt.hash(password, 12);
     await sql`
       INSERT INTO admin_users (username, email, password_hash, role)
-      VALUES ('admin', 'admin@rhibms.com', ${passwordHash}, 'superadmin');
+      VALUES (${'registry-' + require('node:crypto').randomUUID()}, ${email}, ${hash}, 'admissions_officer')
+      ON CONFLICT (email) DO UPDATE SET password_hash = EXCLUDED.password_hash;
     `;
-    console.log('Created default admin: admin@rhibms.com / admin12345');
+    console.log('Admissions administrator credentials saved.');
   }
 
   console.log('Neon database schema initialized successfully!');

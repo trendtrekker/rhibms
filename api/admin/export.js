@@ -3,20 +3,15 @@ const { authenticateAdmin } = require('../../lib/auth');
 
 function escapeCsv(val) {
   if (val === null || val === undefined) return '""';
-  const str = String(val).replace(/"/g, '""');
+  const text = String(val);
+  const safe = /^[\s]*[=+@-]|^[\t\r\n]/.test(text) ? "'" + text : text;
+  const str = safe.replace(/"/g, '""');
   return `"${str}"`;
 }
 
 module.exports = async function handler(req, res) {
-  // Can be authorized via bearer token or token query param for direct download
-  const token = req.query.token;
-  let admin = null;
-  if (token) {
-    const { verifyToken } = require('../../lib/auth');
-    admin = verifyToken(token);
-  } else {
-    admin = authenticateAdmin(req);
-  }
+  res.setHeader('Cache-Control', 'no-store');
+  const admin = authenticateAdmin(req);
 
   if (!admin) {
     return res.status(401).json({ success: false, error: 'Unauthorized.' });

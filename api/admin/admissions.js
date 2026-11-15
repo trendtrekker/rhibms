@@ -2,6 +2,7 @@ const { getDb } = require('../../lib/db');
 const { authenticateAdmin } = require('../../lib/auth');
 
 module.exports = async function handler(req, res) {
+  res.setHeader('Cache-Control', 'no-store');
   const admin = authenticateAdmin(req);
   if (!admin) {
     return res.status(401).json({ success: false, error: 'Unauthorized. Admin session expired or invalid.' });
@@ -9,19 +10,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const { status, category, search, limit = 50, offset = 0 } = req.query;
-    let sql;
-    try {
-      sql = getDb();
-    } catch (e) {
-      return res.status(200).json({
-        success: true,
-        admissions: [],
-        total: 0,
-        warning: 'Neon database not connected yet. Please set DATABASE_URL.'
-      });
-    }
-
-    const conditions = [];
+    const sql = getDb();
 
     let queryText = 'SELECT * FROM admissions WHERE 1=1';
     const params = [];
@@ -36,18 +25,18 @@ module.exports = async function handler(req, res) {
       queryText += ` AND school_category = $${params.length}`;
     }
 
-    if (search && search.trim()) {
+    if (typeof search === 'string' && search.trim()) {
       const term = `%${search.trim().toLowerCase()}%`;
       params.push(term);
-      queryText += ` AND (LOWER(full_name) LIKE $${params.length} OR LOWER(reference_no) LIKE $${params.length} OR phone LIKE $${params.length} OR LOWER(email) LIKE $${params.length})`;
+      queryText += ` AND (LOWER(full_name) LIKE $${params.length} OR LOWER(reference_no) LIKE $${params.length} OR phone LIKE $${params.length} OR LOWER(program) LIKE $${params.length} OR LOWER(email) LIKE $${params.length})`;
     }
 
-    queryText += ' ORDER BY created_at DESC';
+    queryText += ' ORDER BY created_at DESC, id DESC';
 
-    params.push(parseInt(limit, 10) || 50);
+    params.push(Math.min(100, Math.max(1, parseInt(limit, 10) || 50)));
     queryText += ` LIMIT $${params.length}`;
 
-    params.push(parseInt(offset, 10) || 0);
+    params.push(Math.max(0, parseInt(offset, 10) || 0));
     queryText += ` OFFSET $${params.length}`;
 
     // Execute raw parameterized query via neon connection
@@ -65,10 +54,10 @@ module.exports = async function handler(req, res) {
       countParams.push(category);
       countQuery += ` AND school_category = $${countParams.length}`;
     }
-    if (search && search.trim()) {
+    if (typeof search === 'string' && search.trim()) {
       const term = `%${search.trim().toLowerCase()}%`;
       countParams.push(term);
-      countQuery += ` AND (LOWER(full_name) LIKE $${countParams.length} OR LOWER(reference_no) LIKE $${countParams.length} OR phone LIKE $${countParams.length} OR LOWER(email) LIKE $${countParams.length})`;
+      countQuery += ` AND (LOWER(full_name) LIKE $${countParams.length} OR LOWER(reference_no) LIKE $${countParams.length} OR phone LIKE $${countParams.length} OR LOWER(program) LIKE $${countParams.length} OR LOWER(email) LIKE $${countParams.length})`;
     }
 
     const countRes = await sql(countQuery, countParams);
