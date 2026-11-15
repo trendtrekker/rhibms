@@ -84,7 +84,7 @@
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error('Stats unavailable');
-      document.getElementById('db-status-text').textContent = 'Neon registry connected';
+      document.getElementById('db-status-text').textContent = 'Registry connected';
       if (data.stats) {
         const s = data.stats;
         document.getElementById('stat-total').textContent = (s.total || 0).toLocaleString();
@@ -120,7 +120,7 @@
     tableBody.innerHTML = `
       <tr>
         <td colspan="8" class="text-center py-10 text-slate-400">
-          <span class="inline-block animate-spin mr-2">⏳</span> Querying Neon Database...
+          <span class="inline-block animate-spin mr-2">⏳</span> Loading admissions records…
         </td>
       </tr>
     `;
@@ -238,12 +238,12 @@
     document.getElementById('detail-modal').classList.add('hidden');
   };
 
-  // Save Admission Changes to Neon DB
+  // Save admission changes
   window.saveAdmissionChanges = async function() {
     if (!selectedAdmission) return;
     const saveBtn = document.getElementById('modal-save-btn');
     saveBtn.disabled = true;
-    saveBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Saving to Neon...';
+    saveBtn.innerHTML = '<span class="inline-block animate-spin mr-2">⏳</span> Saving…';
 
     const newStatus = document.getElementById('modal-status-select').value;
     const newTuitionStatus = document.getElementById('modal-tuition-select').value;
@@ -282,7 +282,7 @@
       alert('The changes could not be confirmed. Refresh the registry before retrying.');
     } finally {
       saveBtn.disabled = false;
-      saveBtn.innerHTML = '<span>Save Changes to Neon DB</span>';
+      saveBtn.innerHTML = '<span>Save changes</span>';
     }
   };
 

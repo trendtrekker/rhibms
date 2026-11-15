@@ -102,7 +102,7 @@
       <div class="flex items-center gap-3 text-xs">
         <div id="db-status-pill" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span id="db-status-text">Checking Neon connection…</span>
+          <span id="db-status-text">Checking registry connection…</span>
         </div>
         <button onclick="fetchAdmissionsData()" class="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700" title="Refresh Data">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -220,7 +220,7 @@
             <!-- Loading Row -->
             <tr id="table-loading-row">
               <td colspan="8" class="text-center py-12 text-slate-400">
-                <span class="inline-block animate-spin mr-2">⏳</span> Loading admissions records from Neon Database...
+                <span class="inline-block animate-spin mr-2">⏳</span> Loading admissions records…
               </td>
             </tr>
           </tbody>
@@ -333,7 +333,7 @@
           <div class="flex items-center justify-between pt-2">
             <button onclick="saveAdmissionChanges()" id="modal-save-btn" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-colors flex items-center gap-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-              <span>Save Changes to Neon DB</span>
+              <span>Save changes</span>
             </button>
           </div>
         </div>
