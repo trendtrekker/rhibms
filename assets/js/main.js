@@ -358,8 +358,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Print voucher handler
   window.printVoucher = function() {
+    const success = document.getElementById('app-step-success');
+    if (!success || success.classList.contains('hidden')) return;
+
+    const slip = document.createElement('section');
+    slip.className = 'admission-print-slip';
+    for (const part of success.querySelectorAll('[data-print-slip]')) {
+      const copy = part.cloneNode(true);
+      copy.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
+      slip.append(copy);
+    }
+
+    document.body.append(slip);
+    window.addEventListener('afterprint', () => slip.remove(), { once: true });
     window.print();
   };
 });

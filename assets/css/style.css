@@ -150,3 +150,35 @@ html {
   z-index: 5;
   mix-blend-mode: screen;
 }
+
+.admission-print-slip {
+  display: none;
+}
+
+@media print {
+  body:has(> .admission-print-slip) {
+    margin: 0;
+    background: white;
+  }
+
+  body:has(> .admission-print-slip) > :not(.admission-print-slip) {
+    display: none !important;
+  }
+
+  body > .admission-print-slip {
+    display: block;
+    max-width: 180mm;
+    margin: 0 auto;
+    padding: 8mm;
+    color: #0f172a;
+    overflow-wrap: anywhere;
+    break-inside: avoid;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .admission-print-slip > :first-child {
+    margin-bottom: 5mm;
+    text-align: center;
+  }
+}
