@@ -23,12 +23,15 @@ module.exports = async function handler(req, res) {
         COUNT(*) FILTER (WHERE school_category = 'health') as cat_health,
         COUNT(*) FILTER (WHERE school_category = 'engineering') as cat_engineering,
         COUNT(*) FILTER (WHERE school_category = 'management') as cat_management,
-        COUNT(*) FILTER (WHERE school_category = 'agriculture') as cat_agriculture
+        COUNT(*) FILTER (WHERE school_category = 'agriculture') as cat_agriculture,
+        COUNT(*) FILTER (WHERE degree_level = 'masters') as level_masters,
+        COUNT(*) FILTER (WHERE degree_level = 'bsc') as level_bsc,
+        COUNT(*) FILTER (WHERE degree_level = 'hnd' OR degree_level IS NULL) as level_hnd
       FROM admissions;
     `;
 
     const recent = await sql`
-      SELECT id, reference_no, full_name, program, school_category, status, created_at
+      SELECT id, reference_no, full_name, program, school_category, degree_level, status, created_at
       FROM admissions
       ORDER BY created_at DESC, id DESC
       LIMIT 5;
@@ -51,6 +54,11 @@ module.exports = async function handler(req, res) {
           engineering: parseInt(row.cat_engineering || 0, 10),
           management: parseInt(row.cat_management || 0, 10),
           agriculture: parseInt(row.cat_agriculture || 0, 10)
+        },
+        byLevel: {
+          masters: parseInt(row.level_masters || 0, 10),
+          bsc: parseInt(row.level_bsc || 0, 10),
+          hnd: parseInt(row.level_hnd || 0, 10)
         },
         recent
       }

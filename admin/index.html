@@ -175,9 +175,16 @@
           <button class="status-tab px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-400" data-status="enrolled">Enrolled</button>
         </div>
 
-        <!-- School Category Dropdown & Search -->
+        <!-- Degree Level & School Category Dropdown & Search -->
         <div class="flex flex-col sm:flex-row items-center gap-3">
           
+          <select id="level-filter" aria-label="Filter applications by study level" onchange="fetchAdmissionsData()" class="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <option value="all">All Study Levels</option>
+            <option value="masters">🎓 Master's &amp; MBA</option>
+            <option value="bsc">📘 Bachelor's (BSc / BTech)</option>
+            <option value="hnd">🏛️ HND Diplomas</option>
+          </select>
+
           <select id="faculty-filter" aria-label="Filter applications by school" onchange="fetchAdmissionsData()" class="w-full sm:w-auto px-3.5 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500">
             <option value="all">All Schools / Faculties</option>
             <option value="health">School of Health Sciences</option>

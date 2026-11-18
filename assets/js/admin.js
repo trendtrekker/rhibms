@@ -115,7 +115,9 @@
     const tableBody = document.getElementById('admissions-table-body');
     const emptyNotice = document.getElementById('table-empty-notice');
     const facultySelect = document.getElementById('faculty-filter');
+    const levelSelect = document.getElementById('level-filter');
     currentCategory = facultySelect?.value || 'all';
+    const currentLevel = levelSelect?.value || 'all';
 
     tableBody.innerHTML = `
       <tr>
@@ -130,6 +132,7 @@
       const queryParams = new URLSearchParams({
         status: currentStatus,
         category: currentCategory,
+        degree_level: currentLevel,
         search: searchQuery, limit: pageSize, offset
       });
 
@@ -155,6 +158,18 @@
       activeAdmissions = [];
       tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-rose-400" role="alert">Could not load the admissions registry. Use Refresh to retry.</td></tr>';
     }
+  }
+
+  function getLevelBadge(level, program = '') {
+    const p = (program || '').toLowerCase();
+    const l = (level || '').toLowerCase();
+    if (l === 'masters' || p.includes('msc') || p.includes('master') || p.includes('mba') || p.includes('post graduate')) {
+      return '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">🎓 Master\'s / MBA</span>';
+    }
+    if (l === 'bsc' || p.includes('bsc') || p.includes('btech') || p.includes('bed') || p.includes('direct bsc')) {
+      return '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">📘 Bachelor\'s</span>';
+    }
+    return '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">🏛️ HND / Diploma</span>';
   }
 
   function getStatusBadge(status) {
@@ -185,7 +200,13 @@
         <tr class="hover:bg-slate-800/40 transition-colors">
           <td class="py-3.5 px-4 font-mono font-bold text-emerald-400">${escapeHtml(item.reference_no)}</td>
           <td class="py-3.5 px-4 font-bold text-white">${escapeHtml(item.full_name)}<br><span class="text-[10px] text-slate-500 font-normal">${escapeHtml(item.city || 'Cameroon')}</span></td>
-          <td class="py-3.5 px-4"><span class="font-medium text-slate-200">${escapeHtml(item.program)}</span><br><span class="text-[10px] text-slate-500 uppercase font-semibold">${escapeHtml(item.school_category || 'Faculty')}</span></td>
+          <td class="py-3.5 px-4">
+            <span class="font-medium text-slate-200">${escapeHtml(item.program)}</span>
+            <div class="flex items-center gap-2 mt-1">
+              ${getLevelBadge(item.degree_level, item.program)}
+              <span class="text-[10px] text-slate-500 uppercase font-semibold">${escapeHtml(item.school_category || 'Faculty')}</span>
+            </div>
+          </td>
           <td class="py-3.5 px-4 text-slate-300 font-mono text-[11px]">${escapeHtml(item.phone)}<br><span class="text-slate-500 text-[10px]">${escapeHtml(item.email)}</span></td>
           <td class="py-3.5 px-4 text-slate-300">${escapeHtml(item.qualification)}</td>
           <td class="py-3.5 px-4 text-slate-400">${dateFormatted}</td>
@@ -213,7 +234,7 @@
     document.getElementById('modal-qualification').textContent = selectedAdmission.qualification;
     document.getElementById('modal-school').textContent = selectedAdmission.school_attended || 'Not specified';
     document.getElementById('modal-year').textContent = selectedAdmission.graduation_year || 'Not specified';
-    document.getElementById('modal-program').textContent = selectedAdmission.program;
+    document.getElementById('modal-program').innerHTML = `${escapeHtml(selectedAdmission.program)} <span class="ml-2">${getLevelBadge(selectedAdmission.degree_level, selectedAdmission.program)}</span>`;
     document.getElementById('modal-session').textContent = `${selectedAdmission.intake_session} • Campus Hostel: ${selectedAdmission.hostel_needed ? 'Yes' : 'No'}`;
 
     document.getElementById('modal-status-select').value = selectedAdmission.status || 'pending';

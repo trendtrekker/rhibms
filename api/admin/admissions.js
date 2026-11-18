@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    const { status, category, search, limit = 50, offset = 0 } = req.query;
+    const { status, category, degree_level, search, limit = 50, offset = 0 } = req.query;
     const sql = getDb();
 
     let queryText = 'SELECT * FROM admissions WHERE 1=1';
@@ -23,6 +23,11 @@ module.exports = async function handler(req, res) {
     if (category && category !== 'all') {
       params.push(category);
       queryText += ` AND school_category = $${params.length}`;
+    }
+
+    if (degree_level && degree_level !== 'all') {
+      params.push(degree_level);
+      queryText += ` AND degree_level = $${params.length}`;
     }
 
     if (typeof search === 'string' && search.trim()) {
@@ -53,6 +58,10 @@ module.exports = async function handler(req, res) {
     if (category && category !== 'all') {
       countParams.push(category);
       countQuery += ` AND school_category = $${countParams.length}`;
+    }
+    if (degree_level && degree_level !== 'all') {
+      countParams.push(degree_level);
+      countQuery += ` AND degree_level = $${countParams.length}`;
     }
     if (typeof search === 'string' && search.trim()) {
       const term = `%${search.trim().toLowerCase()}%`;

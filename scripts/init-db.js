@@ -19,6 +19,7 @@ async function initDatabase() {
       graduation_year INT,
       school_attended VARCHAR(150),
       program VARCHAR(150) NOT NULL,
+      degree_level VARCHAR(30) DEFAULT 'hnd',
       school_category VARCHAR(80) NOT NULL,
       intake_session VARCHAR(80) NOT NULL,
       hostel_needed BOOLEAN DEFAULT FALSE,
@@ -31,8 +32,10 @@ async function initDatabase() {
     );
   `;
 
-  // Indexes
+  // Indexes & Migrations
+  await sql`ALTER TABLE admissions ADD COLUMN IF NOT EXISTS degree_level VARCHAR(30) DEFAULT 'hnd';`;
   await sql`CREATE INDEX IF NOT EXISTS idx_admissions_ref ON admissions(reference_no);`;
+  await sql`CREATE INDEX IF NOT EXISTS idx_admissions_degree_level ON admissions(degree_level);`;
   await sql`CREATE INDEX IF NOT EXISTS idx_admissions_status ON admissions(status);`;
   await sql`CREATE INDEX IF NOT EXISTS idx_admissions_program ON admissions(program);`;
   await sql`CREATE INDEX IF NOT EXISTS idx_admissions_created ON admissions(created_at DESC);`;
