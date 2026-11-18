@@ -1,6 +1,12 @@
 const { getDb } = require('../../lib/db');
 const { authenticateAdmin } = require('../../lib/auth');
 
+const LEVEL_SQL = `CASE 
+  WHEN program ILIKE '%msc%' OR program ILIKE '%master%' OR program ILIKE '%mba%' OR program ILIKE '%post graduate%' THEN 'masters'
+  WHEN program ILIKE '%bsc%' OR program ILIKE '%btech%' OR program ILIKE '%bed%' OR program ILIKE '%direct%' OR program ILIKE '%conversion%' OR program ILIKE '%top-up%' THEN 'bsc'
+  ELSE 'hnd'
+END`;
+
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   const admin = authenticateAdmin(req);
@@ -12,7 +18,7 @@ module.exports = async function handler(req, res) {
     const { status, category, degree_level, search, limit = 50, offset = 0 } = req.query;
     const sql = getDb();
 
-    let queryText = 'SELECT * FROM admissions WHERE 1=1';
+    let queryText = `SELECT *, ${LEVEL_SQL} AS degree_level FROM admissions WHERE 1=1`;
     const params = [];
 
     if (status && status !== 'all') {
@@ -27,7 +33,7 @@ module.exports = async function handler(req, res) {
 
     if (degree_level && degree_level !== 'all') {
       params.push(degree_level);
-      queryText += ` AND degree_level = $${params.length}`;
+      queryText += ` AND (${LEVEL_SQL}) = $${params.length}`;
     }
 
     if (typeof search === 'string' && search.trim()) {
@@ -44,8 +50,6 @@ module.exports = async function handler(req, res) {
     params.push(Math.max(0, parseInt(offset, 10) || 0));
     queryText += ` OFFSET $${params.length}`;
 
-    // Execute raw parameterized query via neon connection
-    // We can also query using neon template tags or helper
     const rows = await sql(queryText, params);
 
     // Get total count
@@ -61,7 +65,7 @@ module.exports = async function handler(req, res) {
     }
     if (degree_level && degree_level !== 'all') {
       countParams.push(degree_level);
-      countQuery += ` AND degree_level = $${countParams.length}`;
+      countQuery += ` AND (${LEVEL_SQL}) = $${countParams.length}`;
     }
     if (typeof search === 'string' && search.trim()) {
       const term = `%${search.trim().toLowerCase()}%`;

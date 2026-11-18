@@ -30,7 +30,11 @@ module.exports = async function handler(req, res) {
         graduation_year,
         school_attended,
         program,
-        degree_level,
+        CASE 
+          WHEN program ILIKE '%msc%' OR program ILIKE '%master%' OR program ILIKE '%mba%' OR program ILIKE '%post graduate%' THEN 'masters'
+          WHEN program ILIKE '%bsc%' OR program ILIKE '%btech%' OR program ILIKE '%bed%' OR program ILIKE '%direct%' OR program ILIKE '%conversion%' OR program ILIKE '%top-up%' THEN 'bsc'
+          ELSE 'hnd'
+        END AS degree_level,
         school_category,
         intake_session,
         hostel_needed,

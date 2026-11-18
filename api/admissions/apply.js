@@ -5,20 +5,6 @@ const groups = require('../../assets/js/program-catalog');
 const categories = new Map(groups.flatMap(group => group.programs.map(({ name }) => [name, group.category])));
 const degreeLevels = new Map(groups.flatMap(group => group.programs.map(({ name, level }) => [name, level || group.level || 'hnd'])));
 
-let columnEnsured = false;
-async function ensureDegreeLevelColumn(sql) {
-  if (columnEnsured) return;
-  try {
-    await sql`ALTER TABLE admissions ADD COLUMN IF NOT EXISTS degree_level VARCHAR(30) DEFAULT 'hnd';`;
-    await sql`CREATE INDEX IF NOT EXISTS idx_admissions_degree_level ON admissions(degree_level);`;
-    await sql`UPDATE admissions SET degree_level = 'masters' WHERE (degree_level IS NULL OR degree_level = 'hnd') AND (program ILIKE '%msc%' OR program ILIKE '%master%' OR program ILIKE '%mba%' OR program ILIKE '%post graduate%');`;
-    await sql`UPDATE admissions SET degree_level = 'bsc' WHERE (degree_level IS NULL OR degree_level = 'hnd') AND (program ILIKE '%bsc%' OR program ILIKE '%btech%' OR program ILIKE '%bed%' OR program ILIKE '%direct%');`;
-    columnEnsured = true;
-  } catch (e) {
-    console.warn('Degree level migration note:', e.message);
-  }
-}
-
 function generateReferenceNo() {
   const rand = randomInt(100000000, 1000000000);
   return `RHIBMS-2026-${rand}`;
@@ -61,6 +47,7 @@ module.exports = async function handler(req, res) {
     const intakeSession = session || 'October 2026/2027 Main Intake';
     const isHostel = hostelNeeded === true;
     const gradYear = graduationYear ? parseInt(graduationYear, 10) : null;
+    const initialNotes = `[Degree Track: ${degreeLevel.toUpperCase()}]`;
 
     let sql;
     try {
@@ -68,8 +55,6 @@ module.exports = async function handler(req, res) {
     } catch {
       return res.status(503).json({ success: false, error: 'The admissions registry is temporarily unavailable. Please try again later.' });
     }
-
-    await ensureDegreeLevelColumn(sql);
 
     const rows = await sql`
       INSERT INTO admissions (
@@ -82,10 +67,10 @@ module.exports = async function handler(req, res) {
         graduation_year,
         school_attended,
         program,
-        degree_level,
         school_category,
         intake_session,
-        hostel_needed
+        hostel_needed,
+        admin_notes
       ) VALUES (
         ${referenceNo},
         ${fullName},
@@ -96,12 +81,12 @@ module.exports = async function handler(req, res) {
         ${gradYear},
         ${schoolAttended || ''},
         ${program},
-        ${degreeLevel},
         ${schoolCategory},
         ${intakeSession},
-        ${isHostel}
+        ${isHostel},
+        ${initialNotes}
       )
-      RETURNING id, reference_no, full_name, program, degree_level, status, created_at;
+      RETURNING id, reference_no, full_name, program, status, created_at;
     `;
 
     const saved = rows[0];
@@ -114,7 +99,7 @@ module.exports = async function handler(req, res) {
         referenceNo: saved.reference_no,
         fullName: saved.full_name,
         program: saved.program,
-        degreeLevel: saved.degree_level,
+        degreeLevel,
         status: saved.status,
         createdAt: saved.created_at
       }

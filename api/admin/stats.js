@@ -24,14 +24,19 @@ module.exports = async function handler(req, res) {
         COUNT(*) FILTER (WHERE school_category = 'engineering') as cat_engineering,
         COUNT(*) FILTER (WHERE school_category = 'management') as cat_management,
         COUNT(*) FILTER (WHERE school_category = 'agriculture') as cat_agriculture,
-        COUNT(*) FILTER (WHERE degree_level = 'masters') as level_masters,
-        COUNT(*) FILTER (WHERE degree_level = 'bsc') as level_bsc,
-        COUNT(*) FILTER (WHERE degree_level = 'hnd' OR degree_level IS NULL) as level_hnd
+        COUNT(*) FILTER (WHERE program ILIKE '%msc%' OR program ILIKE '%master%' OR program ILIKE '%mba%' OR program ILIKE '%post graduate%') as level_masters,
+        COUNT(*) FILTER (WHERE (program ILIKE '%bsc%' OR program ILIKE '%btech%' OR program ILIKE '%bed%' OR program ILIKE '%direct%' OR program ILIKE '%conversion%' OR program ILIKE '%top-up%') AND NOT (program ILIKE '%msc%' OR program ILIKE '%master%' OR program ILIKE '%mba%' OR program ILIKE '%post graduate%')) as level_bsc,
+        COUNT(*) FILTER (WHERE NOT (program ILIKE '%msc%' OR program ILIKE '%master%' OR program ILIKE '%mba%' OR program ILIKE '%post graduate%' OR program ILIKE '%bsc%' OR program ILIKE '%btech%' OR program ILIKE '%bed%' OR program ILIKE '%direct%' OR program ILIKE '%conversion%' OR program ILIKE '%top-up%')) as level_hnd
       FROM admissions;
     `;
 
     const recent = await sql`
-      SELECT id, reference_no, full_name, program, school_category, degree_level, status, created_at
+      SELECT id, reference_no, full_name, program, school_category, status, created_at,
+        CASE 
+          WHEN program ILIKE '%msc%' OR program ILIKE '%master%' OR program ILIKE '%mba%' OR program ILIKE '%post graduate%' THEN 'masters'
+          WHEN program ILIKE '%bsc%' OR program ILIKE '%btech%' OR program ILIKE '%bed%' OR program ILIKE '%direct%' OR program ILIKE '%conversion%' OR program ILIKE '%top-up%' THEN 'bsc'
+          ELSE 'hnd'
+        END AS degree_level
       FROM admissions
       ORDER BY created_at DESC, id DESC
       LIMIT 5;
