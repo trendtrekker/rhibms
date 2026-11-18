@@ -28,13 +28,21 @@
   add('health', 'Biomedical conversion', 'BSc Conversion', 1, 'Nutrition & Dietetics');
   add('health', 'Ministry of Public Health / Concours', '', 3, 'SRN Nursing');
   add('health', 'Ministry of Public Health / Concours', '', 1, 'Nursing Assistant');
+  add('health', 'Biomedical & health sciences (Master\'s & Postgraduate)', 'MSc in', 2, 'Midwifery|Public Health (MPH)|Medico-Surgical Nursing|Pharmacology|Chemical Pathology');
+  add('health', 'Biomedical & health sciences (Master\'s & Postgraduate)', 'MSc', 2, 'Nursing Education');
+  add('health', 'Biomedical & health sciences (Master\'s & Postgraduate)', 'Masters in', 2, 'Pediatrics|Mental Health|Clinical Psychology');
+  add('health', 'Biomedical & health sciences (Master\'s & Postgraduate)', 'MSc in', 1, 'Medical Microbiology & Parasitology');
+  add('health', 'Biomedical & health sciences (Master\'s & Postgraduate)', 'Post Graduate Diploma in', 1, 'Midwifery');
 
   add('management', 'Management sciences', 'HND', 2, managementCore + '|' + managementOther);
   add('management', 'Management sciences direct entry', 'Direct BSc', 3, managementCore);
   add('management', 'Management sciences top-up', 'BSc Top-up', 1, 'Accounting|Marketing|Management|Project Management|Human Resource Management|Banking & Finance|Logistics and Transport|Assistant Manager|' + managementOther);
+  add('management', 'Management & business (Master\'s & MBA)', 'Masters in', 2, 'Business Administration (MBA)');
+  add('management', 'Management & business (Master\'s & MBA)', 'MSc in', 2, 'Accounting|Banking & Finance|Project Management|Human Resource Management|Logistics & Supply Chain Management');
   add('legal', 'Legal career', 'HND', 2, 'Legal Assistant|Business Law');
   add('engineering', 'Computer engineering', 'HND', 2, 'Software Engineering|Computer Science & Networks|Database Management|Hardware Maintenance|Computer Graphics & Web Design|E-Commerce & Digital Marketing|Industrial Computing & Automation|Telecommunication|Electronics|Electrical Power System|Electrotechnics');
   add('engineering', 'Computer engineering top-up', 'BSc Top-up', 1, 'Software Engineering|E-Commerce and Digital Marketing|Database Management|Electronics|Electrotechnics|Electrical Power System|Networks and System Maintenance|Computer Graphics & Web Design|Information Technology & Security|Computer Network & Security');
+  add('engineering', 'Engineering & technology (Master\'s)', 'MSc in', 2, 'Information & Cyber Security|Computer Software Engineering');
   add('home-economics', 'Home economics and social work', 'HND', 2, 'Bakery & Food Processing|Fashion, Clothing & Textile');
   add('home-economics', 'Home economics and social work top-up', 'BSc Top-up', 1, 'Bakery & Food Processing|Fashion, Clothing & Textile|Hotel Management & Catering');
   add('home-economics', 'Home economics and social work top-up', 'BTech Top-up', 1, 'Fashion, Clothing & Textile');
